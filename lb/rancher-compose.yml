@@ -1,0 +1,120 @@
+version: '2'
+services:
+  web:
+    start_on_create: true
+    lb_config:
+      certs: []
+      config: |-
+        backend webapi
+            reqrep ^([^\ :]*)\ /api/(.*)     \1\ /\2
+      port_rules:
+      - backend_name: webapi
+        path: /api
+        priority: 1
+        protocol: http
+        service: web/api
+        source_port: 80
+        target_port: 9000
+      - priority: 2
+        protocol: http
+        service: web/ui
+        source_port: 80
+        target_port: 80
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 2000
+      port: 42
+      unhealthy_threshold: 3
+      interval: 2000
+      strategy: recreate
+  spark:
+    start_on_create: true
+    lb_config:
+      certs: []
+      port_rules:
+      - priority: 1
+        protocol: http
+        service: spark/master
+        source_port: 8888
+        target_port: 8080
+      - priority: 2
+        protocol: http
+        service: spark/driver
+        source_port: 4040
+        target_port: 4040
+      - priority: 3
+        protocol: http
+        service: spark/zeppelin
+        source_port: 8080
+        target_port: 8080
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 2000
+      port: 42
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      reinitializing_timeout: 60000
+  kafka:
+    start_on_create: true
+    lb_config:
+      certs: []
+      port_rules:
+      - priority: 1
+        protocol: http
+        service: kafka/manager
+        source_port: 9010
+        target_port: 9000
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 2000
+      port: 42
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      reinitializing_timeout: 60000
+  minio:
+    start_on_create: true
+    lb_config:
+      certs: []
+      port_rules:
+      - priority: 1
+        protocol: http
+        service: minio/minio-server
+        source_port: 9000
+        target_port: 9000
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 2000
+      port: 42
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      reinitializing_timeout: 60000
+  prometheus:
+    start_on_create: true
+    lb_config:
+      certs: []
+      port_rules:
+      - priority: 1
+        protocol: http
+        service: prometheus/grafana
+        source_port: 3000
+        target_port: 3000
+      - priority: 3
+        protocol: http
+        service: prometheus/prometheus
+        source_port: 9090
+        target_port: 9090
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 2000
+      port: 42
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      reinitializing_timeout: 60000

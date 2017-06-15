@@ -1,0 +1,16 @@
+version: '2'
+services:
+  slave:
+    image: vinsdocker/jmserver
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.scheduler.affinity:host_label: test=true
+      io.rancher.container.pull_image: always
+  master:
+    image: vinsdocker/jmmaster
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.scheduler.affinity:host_label: test=true
+      io.rancher.container.pull_image: always

@@ -1,0 +1,8 @@
+version: '2'
+services:
+  ui:
+    scale: 1
+    start_on_create: true
+  api:
+    scale: 3
+    start_on_create: true

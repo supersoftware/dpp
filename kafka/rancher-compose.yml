@@ -1,0 +1,24 @@
+version: '2'
+services:
+  manager:
+    scale: 1
+    start_on_create: true
+  broker-volume:
+    retain_ip: true
+    scale: 3
+    start_on_create: true
+  broker-conf:
+    retain_ip: true
+    scale: 3
+    start_on_create: true
+  broker:
+    retain_ip: true
+    scale: 3
+    start_on_create: true
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 5000
+      port: 9092
+      unhealthy_threshold: 3
+      interval: 5000
+      strategy: recreate

@@ -1,0 +1,50 @@
+version: '2'
+services:
+  web:
+    image: rancher/lb-service-haproxy:v0.7.1
+    ports:
+    - 80:80/tcp
+    labels:
+      io.rancher.container.agent.role: environmentAdmin
+      io.rancher.container.create_agent: 'true'
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+      io.rancher.scheduler.global: 'true'
+  spark:
+    image: rancher/lb-service-haproxy:v0.7.1
+    ports:
+    - 8888:8888/tcp
+    - 4040:4040/tcp
+    - 8080:8080/tcp
+    labels:
+      io.rancher.container.agent.role: environmentAdmin
+      io.rancher.container.create_agent: 'true'
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+      io.rancher.scheduler.global: 'true'
+  kafka:
+    image: rancher/lb-service-haproxy:v0.7.1
+    ports:
+    - 9010:9010/tcp
+    labels:
+      io.rancher.container.agent.role: environmentAdmin
+      io.rancher.container.create_agent: 'true'
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+      io.rancher.scheduler.global: 'true'
+  minio:
+    image: rancher/lb-service-haproxy:v0.7.1
+    ports:
+    - 9000:9000/tcp
+    labels:
+      io.rancher.container.agent.role: environmentAdmin
+      io.rancher.container.create_agent: 'true'
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+      io.rancher.scheduler.global: 'true'
+  prometheus:
+    image: rancher/lb-service-haproxy:v0.7.1
+    ports:
+    - 3000:3000/tcp
+    - 9090:9090/tcp
+    labels:
+      io.rancher.container.agent.role: environmentAdmin
+      io.rancher.container.create_agent: 'true'
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+      io.rancher.scheduler.global: 'true'

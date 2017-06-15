@@ -1,0 +1,21 @@
+version: '2'
+services:
+  zk:
+    retain_ip: true
+    scale: 3
+    start_on_create: true
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 5000
+      port: 2181
+      unhealthy_threshold: 3
+      interval: 5000
+      strategy: recreate
+  zk-conf:
+    retain_ip: true
+    scale: 3
+    start_on_create: true
+  zk-volume:
+    retain_ip: true
+    scale: 3
+    start_on_create: true

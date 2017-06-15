@@ -1,0 +1,68 @@
+version: '2'
+services:
+  CassandraSeed:
+    image: usman/docker-rancher-cassandra:3.1
+    environment:
+      CASSANDRA_DC: internal
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+      CASSANDRA_RACK: rack1
+      RANCHER_ENABLE: 'true'
+      RANCHER_SEED_SERVICE: CassandraSeed
+    stdin_open: true
+    volumes:
+    - /var/lib/cassandra
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+  Cassandra1:
+    image: usman/docker-rancher-cassandra:3.1
+    environment:
+      CASSANDRA_DC: internal
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+      CASSANDRA_RACK: rack1
+      RANCHER_ENABLE: 'true'
+      RANCHER_SEED_SERVICE: CassandraSeed
+    stdin_open: true
+    volumes:
+    - /var/lib/cassandra
+    tty: true
+    labels:
+      io.rancher.scheduler.affinity:container_label_soft_ne: cassandra=true
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+      cassandra: 'true'
+  Cassandra3:
+    image: usman/docker-rancher-cassandra:3.1
+    environment:
+      CASSANDRA_DC: internal
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+      CASSANDRA_RACK: rack1
+      RANCHER_ENABLE: 'true'
+      RANCHER_SEED_SERVICE: CassandraSeed
+    stdin_open: true
+    volumes:
+    - /var/lib/cassandra
+    tty: true
+    labels:
+      io.rancher.scheduler.affinity:container_label_soft_ne: cassandra=true
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+      cassandra: 'true'
+  Cassandra2:
+    image: usman/docker-rancher-cassandra:3.1
+    environment:
+      CASSANDRA_DC: internal
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+      CASSANDRA_RACK: rack1
+      RANCHER_ENABLE: 'true'
+      RANCHER_SEED_SERVICE: CassandraSeed
+    stdin_open: true
+    volumes:
+    - /var/lib/cassandra
+    tty: true
+    labels:
+      io.rancher.scheduler.affinity:container_label_soft_ne: cassandra=true
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+      cassandra: 'true'

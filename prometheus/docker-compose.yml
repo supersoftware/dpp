@@ -1,0 +1,79 @@
+version: '2'
+services:
+  node-exporter:
+    image: prom/node-exporter:latest
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.scheduler.global: 'true'
+  prom-conf:
+    image: infinityworks/prom-conf:17
+    network_mode: none
+    volumes:
+    - /etc/prom-conf/
+    tty: true
+    links:
+    - node-exporter:node-exporter
+    - cadvisor:cadvisor
+    - prometheus-rancher-exporter:prometheus-rancher-exporter
+  grafana:
+    image: grafana/grafana:4.0.2
+    tty: true
+    links:
+    - prometheus:prometheus
+    - prometheus-rancher-exporter:prometheus-rancher-exporter
+    volumes_from:
+    - graf-db
+    labels:
+      io.rancher.sidekicks: graf-db
+  cadvisor:
+    image: google/cadvisor:latest
+    stdin_open: true
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    tty: true
+    labels:
+      io.rancher.scheduler.global: 'true'
+  prometheus-rancher-exporter:
+    image: infinityworks/prometheus-rancher-exporter:v0.22.40
+    tty: true
+    labels:
+      io.rancher.container.agent.role: environment
+      io.rancher.container.create_agent: 'true'
+  prometheus:
+    image: prom/prometheus:v1.4.1
+    tty: true
+    links:
+    - node-exporter:node-exporter
+    - cadvisor:cadvisor
+    - prometheus-rancher-exporter:prometheus-rancher-exporter
+    volumes_from:
+    - prom-conf
+    command:
+    - -alertmanager.url=http://alertmanager:9093
+    - -config.file=/etc/prom-conf/prometheus.yml
+    - -storage.local.path=/prometheus
+    - -web.console.libraries=/etc/prometheus/console_libraries
+    - -web.console.templates=/etc/prometheus/consoles
+    labels:
+      io.rancher.sidekicks: prom-conf
+  graf-db:
+    image: infinityworks/graf-db:10
+    network_mode: none
+    volumes:
+    - /var/lib/grafana/
+    tty: true
+    links:
+    - prometheus:prometheus
+    - prometheus-rancher-exporter:prometheus-rancher-exporter
+    command:
+    - cat
+  influxdb:
+    image: tutum/influxdb:0.10
+    environment:
+      GRAPHITE_BINDING: :2003
+      GRAPHITE_DB: rancher
+      PRE_CREATE_DB: grafana;prometheus;rancher

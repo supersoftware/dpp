@@ -1,0 +1,44 @@
+version: '2'
+services:
+  zk:
+    image: rawmind/alpine-zk:3.4.9
+    environment:
+      JVMFLAGS: -Xmx256m -Xms256m
+      ZK_DATA_DIR: /opt/zk/data
+      ZK_INIT_LIMIT: '10'
+      ZK_MAX_CLIENT_CXNS: '500'
+      ZK_SYNC_LIMIT: '5'
+      ZK_TICK_TIME: '2000'
+    tty: true
+    volumes_from:
+    - zk-conf
+    - zk-volume
+    labels:
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.sidekicks: zk-conf,zk-volume
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+  zk-conf:
+    image: rawmind/rancher-zk:3.4.8-5
+    network_mode: none
+    volumes:
+    - /opt/tools
+    labels:
+      io.rancher.container.start_once: 'true'
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+  zk-volume:
+    image: rawmind/alpine-volume:0.0.2-1
+    environment:
+      SERVICE_GID: '10002'
+      SERVICE_UID: '10002'
+      SERVICE_VOLUME: /opt/zk/data
+    network_mode: none
+    volumes:
+    - /opt/zk/data
+    labels:
+      io.rancher.container.start_once: 'true'
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label_ne: test=true

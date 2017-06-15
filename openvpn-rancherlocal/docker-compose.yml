@@ -1,0 +1,34 @@
+version: '2'
+services:
+  openvpn-rancherlocal-server:
+    privileged: true
+    image: mdns/rancher-openvpn:1.1
+    environment:
+      AUTH_METHOD: rancherlocal
+      AUTH_RANCHERLOCAL_URL: https://<path_to_your_rancher_server>/v1/token
+      CERT_CITY: Birmingham
+      CERT_COUNTRY: US
+      CERT_EMAIL: foo@example.com
+      CERT_ORG: ACME
+      CERT_OU: IT
+      CERT_PROVINCE: AL
+      OPENVPN_EXTRACONF: duplicate-cn
+      REMOTE_IP: IP-address-or-hostname
+      REMOTE_PORT: '1194'
+      VPNPOOL_CIDR: '16'
+      VPNPOOL_NETWORK: 10.43.0.0
+    volumes_from:
+    - openvpn-rancherlocal-data
+    ports:
+    - 1194:1194/tcp
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.sidekicks: openvpn-rancherlocal-data
+  openvpn-rancherlocal-data:
+    image: busybox
+    entrypoint:
+    - /bin/true
+    volumes:
+    - /etc/openvpn/
+    labels:
+      io.rancher.container.start_once: 'true'

@@ -1,0 +1,62 @@
+version: '2'
+services:
+  manager:
+    image: supersoftware/kafka-manager
+    environment:
+      APPLICATION_SECRET: letmein
+      ZK_HOSTS: zookeeper-zk-1.rancher.internal:2181,zookeeper-zk-2.rancher.internal:2181,zookeeper-zk-3.rancher.internal:2181
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+  broker-volume:
+    image: rawmind/alpine-volume:0.0.2-1
+    environment:
+      SERVICE_GID: '10003'
+      SERVICE_UID: '10003'
+      SERVICE_VOLUME: /opt/kafka/logs
+    external_links:
+    - zookeeper/zk:zk
+    network_mode: none
+    volumes:
+    - /opt/kafka/logs
+    labels:
+      io.rancher.container.start_once: 'true'
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+  broker-conf:
+    image: rawmind/rancher-kafka:0.10.0.0-3
+    external_links:
+    - zookeeper/zk:zk
+    network_mode: none
+    volumes:
+    - /opt/tools
+    labels:
+      io.rancher.container.start_once: 'true'
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+  broker:
+    image: rawmind/alpine-kafka:0.10.0.1-1
+    environment:
+      ADVERTISE_PUB_IP: 'false'
+      CONFD_INTERVAL: '60'
+      JVMFLAGS: -Xmx4096m -Xms4096m
+      KAFKA_DELETE_TOPICS: 'true'
+      KAFKA_LOG_DIRS: /opt/kafka/logs
+      KAFKA_LOG_RETENTION_HOURS: '168'
+      KAFKA_NUM_PARTITIONS: '50'
+      ZK_SERVICE: zookeeper/zk
+    external_links:
+    - zookeeper/zk:zk
+    tty: true
+    volumes_from:
+    - broker-volume
+    - broker-conf
+    labels:
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.sidekicks: broker-volume,broker-conf
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label_ne: test=true

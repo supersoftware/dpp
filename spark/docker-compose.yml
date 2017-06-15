@@ -1,0 +1,78 @@
+version: '2'
+services:
+  driver:
+    image: supersoftware/rancher-spark
+    environment:
+      APP_PATH: s3://dist/kafka-spark-cassandra-assembly-1.0.jar
+      ASSEMBLY_NAME: spark-app-assembly.jar
+      AWS_ACCESS_KEY_ID: rancher-minio
+      AWS_SECRET_ACCESS_KEY: beeforchicken
+      ENDPOINT_URL: http://minio.lb:9000
+    stdin_open: true
+    tty: true
+    command:
+    - spark-submit
+    - --class
+    - io.capsulecloud.Main
+    - --master
+    - spark://master:7077
+    - --conf
+    - spark.driver.extraJavaOptions=-Dapp.bootstrapServers=kafka-broker-1.rancher.internal:9092,kafka-broker-2.rancher.internal:9092,kafka-broker-3.rancher.internal:9092 -Dapp.contactPoints=cassandra-Cassandra1-1.rancher.internal,cassandra-Cassandra2-1.rancher.internal,cassandra-Cassandra3-1.rancher.internal
+    - --conf
+    - spark.cassandra.output.batch.grouping.key=none
+    - --conf
+    - spark.cassandra.output.consistency.level=ANY
+    - --conf
+    - spark.cassandra.output.batch.grouping.buffer.size=4000
+    - --conf
+    - spark.cassandra.output.batch.size.bytes=4096
+    - --driver-memory
+    - 3g
+    - --executor-memory
+    - 3g
+    - --total-executor-cores
+    - '6'
+    - spark-app-assembly.jar
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+  zeppelin:
+    image: supersoftware/rancher-zeppelin
+    stdin_open: true
+    tty: true
+    command:
+    - start
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+  worker:
+    privileged: true
+    image: supersoftware/rancher-spark:latest
+    environment:
+      APP_PATH: s3://dist/kafka-spark-cassandra-assembly-1.0.jar
+      ASSEMBLY_NAME: spark-app-assembly.jar
+      AWS_ACCESS_KEY_ID: rancher-minio
+      AWS_SECRET_ACCESS_KEY: beeforchicken
+      ENDPOINT_URL: http://minio.lb:9000
+      MASTER_HOSTNAME: master
+      constraint:node: =/node0/
+    command:
+    - worker
+    labels:
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+  master:
+    privileged: true
+    image: supersoftware/rancher-spark:latest
+    hostname: master
+    environment:
+      APP_PATH: s3://dist/kafka-spark-cassandra-assembly-1.0.jar
+      ASSEMBLY_NAME: spark-app-assembly.jar
+      AWS_ACCESS_KEY_ID: rancher-minio
+      AWS_SECRET_ACCESS_KEY: beeforchicken
+      ENDPOINT_URL: http://minio.lb:9000
+      constraint:node: =/node0/
+    command:
+    - master
+    labels:
+      io.rancher.scheduler.affinity:host_label_ne: test=true

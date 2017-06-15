@@ -1,0 +1,15 @@
+version: '2'
+services:
+  openvpn-rancherlocal-server:
+    scale: 1
+    start_on_create: true
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 2000
+      port: 1194
+      unhealthy_threshold: 5
+      interval: 30000
+      strategy: none
+  openvpn-rancherlocal-data:
+    scale: 1
+    start_on_create: true

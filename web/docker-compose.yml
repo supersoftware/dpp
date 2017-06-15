@@ -1,0 +1,27 @@
+version: '2'
+services:
+  ui:
+    image: supersoftware/dpp-demo-app-ui
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label_ne: test=true
+  api:
+    image: supersoftware/akka-kafka-webapi:1.0
+    environment:
+      BOOTSTRAP_SERVERS: kafka-broker-1.rancher.internal:9092,kafka-broker-2.rancher.internal:9092,kafka-broker-3.rancher.internal:9092
+      CASSANDRA_CONTACT_POINTS: cassandra-Cassandra1-1.rancher.internal,cassandra-Cassandra2-1.rancher.internal,cassandra-Cassandra3-1.rancher.internal
+      CASSANDRA_KEYSPACE: boc
+      CASSANDRA_PORT: '9042'
+      HTTP_HOST: 0.0.0.0
+      HTTP_PORT: '9000'
+      KAFKA_TOPIC: topic1
+    stdin_open: true
+    tty: true
+    command:
+    - -Dakka.actor.default-dispatcher.throughput=20
+    labels:
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label_ne: test=true
